@@ -1,0 +1,73 @@
+﻿@page "/movies/edit/{ID:int}"
+
+@inject NavigationManager NavManager
+@inject HttpClient httpClient
+@using MovieApp.Shared.Models
+
+<h1>Edit details of movie</h1>
+<br />
+<div>Title, Summary Is in theaters?, Trailer, Release date, Poster</div>
+
+
+
+<EditForm Model="NewMovie" OnSubmit="UpdateMovie">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id="title" @bind-Value="NewMovie.Title"/>
+    <InputText id="summary" @bind-Value="NewMovie.Summary" />
+    <InputCheckbox id="inTheaters" @bind-Value="NewMovie.InTheaters" />
+    <InputText id="trailer" @bind-Value="NewMovie.Trailer" />
+    <InputDate id="release" @bind-Value="NewMovie.ReleaseDate" />
+    <InputText id="poster" @bind-Value="NewMovie.Poster" />
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+
+<br />
+<button @onclick="goBack" class="btn btn-primary">Go back</button>
+
+@code {
+    [Parameter] public int ID { get; set; }
+
+    Movie NewMovie { get; set; } = new Movie();
+
+    Movie newMovie;
+    private List<Movie> MoviesList;
+
+    private async Task GetMovies()
+    {
+        var responseHTTP = await httpClient.GetAsync("https://localhost:5001/api/movies");
+
+
+        if (responseHTTP.IsSuccessStatusCode)
+        {
+            var responseString = await responseHTTP.Content.ReadAsStringAsync();
+            MoviesList = System.Text.Json.JsonSerializer.Deserialize<List<Movie>>(responseString, new System.Text.Json.JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+
+    }
+    protected async override Task OnInitializedAsync()
+    {
+        await GetMovies();
+
+        newMovie = MoviesList.FirstOrDefault(m => m.Id == ID);
+        StateHasChanged();
+    }
+
+    private async Task UpdateMovie()
+    {
+        NewMovie.Id = ID;
+
+        var addItem = NewMovie;
+        await httpClient.PutAsJsonAsync("api/movies", addItem);
+    }
+
+    private void goBack()
+    {
+        NavManager.NavigateTo("/movies");
+    }
+
+
+}

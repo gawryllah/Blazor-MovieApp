@@ -1,0 +1,49 @@
+﻿@page "/movies/add"
+
+@using MovieApp.Shared.Models
+@inject NavigationManager NavManager
+@inject HttpClient HttpClient
+@using System.ComponentModel.DataAnnotations
+
+<h3>Add Movie</h3>
+<br />
+<div>Title, Summary Is in theaters?, Trailer, Release date, Poster</div>
+
+
+
+<EditForm Model="NewMovie" OnSubmit="AddMoviee">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id="title" @bind-Value="NewMovie.Title" />
+    <InputText id="summary" @bind-Value="NewMovie.Summary" />
+    <InputCheckbox id="inTheaters" @bind-Value="NewMovie.InTheaters" />
+    <InputText id="trailer" @bind-Value="NewMovie.Trailer" />
+    <InputDate id="release" @bind-Value="NewMovie.ReleaseDate" />
+    <InputText id="poster" @bind-Value="NewMovie.Poster" />
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+
+<br />
+<button @onclick="goBack" class="btn btn-primary">Go back</button>
+
+@code {
+
+    private string errorMessage;
+    Movie NewMovie { get; set; } = new Movie();
+
+
+    private void goBack()
+    {
+        NavManager.NavigateTo("/movies");
+    }
+
+    private async Task AddMoviee()
+    {
+
+        var addItem = NewMovie;
+        await HttpClient.PostAsJsonAsync("api/movies", addItem);
+    }
+}

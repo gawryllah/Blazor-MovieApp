@@ -1,0 +1,50 @@
+﻿@page "/movies"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@attribute [Authorize]
+@inject HttpClient httpClient
+@inject NavigationManager NavManager
+
+
+<h3>Movies</h3>
+<button @onclick="GoToAddMovie" class="btn btn-primary">Add movie </button>
+<div>
+    <h3>In theaters<br /></h3>
+
+
+    <MoviesList Movies="MoviesList" />
+
+
+</div>
+
+@code {
+
+    private List<Movie> MoviesList;
+    protected async override Task OnInitializedAsync()
+    {
+        await GetMovies();
+    }
+
+    private async Task GetMovies()
+    {
+        var responseHTTP = await httpClient.GetAsync("https://localhost:5001/api/movies");
+
+
+        if (responseHTTP.IsSuccessStatusCode)
+        {
+            var responseString = await responseHTTP.Content.ReadAsStringAsync();
+            MoviesList = System.Text.Json.JsonSerializer.Deserialize<List<Movie>>(responseString, new System.Text.Json.JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+        else
+        {
+
+        }
+    }
+
+    private async Task GoToAddMovie()
+    {
+
+        NavManager.NavigateTo("/movies/add");
+    }
+
+}
